@@ -1,0 +1,75 @@
+name: CI
+
+on:
+  push:
+     branches: 
+     - github-action-poc
+jobs:
+  common-job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v3
+
+      - name: setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: 'npm'
+
+      - name: cache node_modules
+        id: cache-node_modules
+        uses: actions/cache@v3
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-modules-
+
+      - name: install dependency
+        if: steps.cache-node_modules.outputs.cache-hit != 'true'
+        run: npm ci
+
+      - name: upload workspace
+        uses: actions/upload-artifact@v4
+        with:
+          name: 'workspace'
+          path: |
+            package.json
+            package-lock.json
+            src/
+            dist/
+
+  push-job-build:
+    needs: common-job
+    if: github.event_name == 'push' && github.ref == 'refs/heads/github-action-poc'
+    runs-on: ubuntu-latest
+    env:
+      API_KEY: ${{secrets.API_KEY}}
+    steps:
+      - name: download workspace
+        uses: actions/download-artifact@v4
+        with:
+          name: 'workspace'
+          path: .
+
+      - name: checkout code
+        uses: actions/checkout@v3
+
+      - name: setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: 'npm'
+
+      - name: restore node_modules
+        uses: actions/cache@v3
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/package-lock.json') }}
+
+      - name: run AI test
+        run: npm run ai-test
+
+      - name: build project
+        run: npm run build
