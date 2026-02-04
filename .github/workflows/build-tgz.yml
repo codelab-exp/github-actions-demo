@@ -73,3 +73,13 @@ jobs:
 
       - name: build project
         run: npm run build
+
+  deploy-job:
+    name: deploy to dev
+    needs: push-job-build
+    runs-on: ubuntu-latest
+    environment: dev
+    steps:
+       - name: deploy to dev
+         run: echo "deploying to dev ..."
+

@@ -21,7 +21,7 @@ async function run() {
     }else {
         console.log("api key found " + apiKey);
     }
-    const chatResponse = await axios.post(OPENAI_API_URL, {
+    /*const chatResponse = await axios.post(OPENAI_API_URL, {
         model: 'gpt-4o',
         messages,
         temperature: 0.3
@@ -31,7 +31,7 @@ async function run() {
             "Content-Type": "application/json"
         }
     });
-    console.log("gpt response code : "+chatResponse.status)
+    console.log("gpt response code : "+chatResponse.status)*/
 }
 
 run();
